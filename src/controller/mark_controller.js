@@ -1,11 +1,14 @@
 const dbconnection = require('../database');
 
-exports.getStudent = async(req, res) => {
+exports.getMark = async(req, res) => {
     try {
-        const student = await dbconnection.query('SELECT * FROM student');
+        const mark = await dbconnection.query(
+            'SELECT m.id,m.marks,s.name AS subject,a.name AS student FROM marks m LEFT JOIN subject s ON m.subjectid = s.id LEFT JOIN student a ON m.studentid = a.id'
+        );
+        console.log(mark);
         res.status(200).send({
             success: true,
-            data: student[0],
+            data: mark[0],
             message: 'Success'
         });
     } catch (error) {
@@ -17,16 +20,29 @@ exports.getStudent = async(req, res) => {
     }
 }
 
-exports.saveStudent = async(req, res) => {
+exports.saveMark = async(req, res) => {
     try {
-        let {name, sex} = req.body;
-        const student = await dbconnection.query(
-            "INSERT INTO student(name, sex) VALUES(?, ?)", [name, sex]);
-        res.status(201).send({
-            success: true,
-            data: student,
-            message: 'Successfully Saved'
-        });
+        let {studentid, subjectid, marks} = req.body;
+        const control_studentid = await dbconnection.query(
+            'SELECT * FROM student WHERE id = ?', [studentid]
+        );
+
+        if(control_studentid[0].length===0){
+            res.status(404).send({
+                success: false,
+                data: [],
+                message: 'Student ID not found'
+            });
+        }else{
+            const mark = await dbconnection.query(
+                "INSERT INTO marks(studentid, subjectid, marks) VALUES(?, ?, ?)", [studentid, subjectid, marks]);
+            res.status(201).send({
+                success: true,
+                data: mark,
+                message: 'Successfully Saved'
+            });
+        }
+        
     } catch (error) {
         res.status(500).send({
             success: false,
@@ -36,21 +52,21 @@ exports.saveStudent = async(req, res) => {
     }
 }
 
-exports.updateStudent = async(req, res) => {
+exports.updateMark = async(req, res) => {
     try {
-        let {name, sex} = req.body;
+        let {studentid, subjectid, marks} = req.body;
         let id = req.query.id;
-        const student = await dbconnection.query(
-            "UPDATE student SET name = ?, sex = ? WHERE id= ?",
-             [name, sex, id]
+        const mark = await dbconnection.query(
+            "UPDATE marks SET studentid = ?, subjectid = ?, marks = ? WHERE id= ?",
+             [studentid, subjectid, marks, id]
             );
-        const updateStudent = await dbconnection.query(
-            "SELECT * FROM student WHERE id = ?",
+        const updateMark = await dbconnection.query(
+            "SELECT * FROM marks WHERE id = ?",
             [id]
         );
         res.status(201).send({
             success: true,
-            data: updateStudent[0],
+            data: updateMark[0],
             message: 'Successfully Updated'
         });
     } catch (error) {
@@ -62,16 +78,16 @@ exports.updateStudent = async(req, res) => {
     }
 }
 
-exports.deleteStudent = async(req, res) => {
+exports.deleteMark = async(req, res) => {
     try {
         let id = req.params.id;
-        const student = await dbconnection.query(
-            "DELETE FROM student WHERE id= ?",
+        const mark = await dbconnection.query(
+            "DELETE FROM marks WHERE id= ?",
              [id]
             );
         res.status(200).send({
             success: true,
-            data: student,
+            data: mark,
             message: 'Successfully Deleted '+id
         });
     } catch (error) {
