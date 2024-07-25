@@ -26,14 +26,30 @@ exports.saveMark = async(req, res) => {
         const control_studentid = await dbconnection.query(
             'SELECT * FROM student WHERE id = ?', [studentid]
         );
+        
+        const control_subjectid = await dbconnection.query(
+            'SELECT * FROM subject WHERE id = ?', [subjectid]
+        );
 
-        if(control_studentid[0].length===0){
+        if(control_subjectid[0].length===0 && control_studentid[0].length!=0){
+            res.status(404).send({
+                success: false,
+                data: [],
+                message: 'Subject ID not found'
+            })
+        }else if(control_studentid[0].length===0 && control_subjectid[0].length!=0){
             res.status(404).send({
                 success: false,
                 data: [],
                 message: 'Student ID not found'
             });
-        }else{
+        }else if(control_studentid[0].length===0 && control_subjectid[0].length===0){
+            res.status(404).send({
+                success: false,
+                data: [],
+                message: 'Student ID and Subject ID not found'
+            });
+        }else if(control_studentid[0].length!=0 && control_subjectid[0].length!=0){
             const mark = await dbconnection.query(
                 "INSERT INTO marks(studentid, subjectid, marks) VALUES(?, ?, ?)", [studentid, subjectid, marks]);
             res.status(201).send({
