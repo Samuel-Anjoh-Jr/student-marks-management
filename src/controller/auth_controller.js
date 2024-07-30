@@ -28,33 +28,33 @@ exports.signup = async (req, res) => {
 exports.signin = async (req, res) => {
     try {
         let {email, password} = req.body;
+
         const user_found = await dbconnection.query(
-            'SELECT * FROM user WHERE email = ?', [email]
+            'SELECT * FROM students WHERE email = ?', [email]
         );
-        let user = user_found[0];
-        let verifyPassword = await bcrypt.compare(password, user[0].password, (error, result) => {
-            console.log(result)
-        });
-        console.log(verifyPassword);
+
         if(user_found[0].length===0){
             res.status(401).send({
                 success: false,
                 data: [],
                 message: "Wrong email"
             })
-        }else if(verifyPassword && user_found[0].length!=0){
+        }else{
+            let verifyPassword = await bcrypt.compare(password, user_found[0][0].password);
+            if(verifyPassword){
                 res.status(201).send({
                     success: true,
                     data: user_found[0],
-                    message: 'Saved Successfully'
+                    message: 'Successfully Login'
                 });
-        }else{
+            }else{
                 res.status(401).send({
                     success: false,
                     data: [],
-                    message: 'Wrong Password'
+                    message: 'Wrong password'
                 });
             }
+        }
     } catch (error) {
         res.status(500).send({
             success: false,
