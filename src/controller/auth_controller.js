@@ -30,7 +30,7 @@ exports.signin = async (req, res) => {
         let {email, password} = req.body;
 
         const user_found = await dbconnection.query(
-            'SELECT * FROM students WHERE email = ?', [email]
+            'SELECT * FROM user WHERE email = ?', [email]
         );
 
         if(user_found[0].length===0){
