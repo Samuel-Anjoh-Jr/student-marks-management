@@ -6,7 +6,7 @@ const subj_route = require('./src/routes/subject_route');
 const ma_route = require('./src/routes/mark_route');
 const auth_route = require('./src/routes/auth_route');
 const app = express();
-const port = 3000;
+const port = 8000;
 app.use(cors());
 app.use(bodyparser.json());
 
